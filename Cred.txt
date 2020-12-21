@@ -1,0 +1,4 @@
+﻿Client ID
+995503915704-ndeggeupeo934vo16r91relsd832sfih.apps.googleusercontent.com
+Client Secret
+mEQn85CJkQEV9afHNVxfOhV9
