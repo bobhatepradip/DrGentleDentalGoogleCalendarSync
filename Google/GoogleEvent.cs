@@ -1,4 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
@@ -13,28 +13,27 @@ using System.Threading.Tasks;
 
 namespace CalendarQuickstart
 {
-    class Program
+    class GoogleEvent
     {
         // If modifying these scopes, delete your previously saved credentials
         // at ~/.credentials/calendar-dotnet-quickstart.json
-        static string[] Scopes = {               
-                CalendarService.Scope.Calendar  ,               
-            CalendarService.Scope.CalendarEvents
+        static string[] Scopes = {
+            CalendarService.Scope.CalendarEvents               
+                //CalendarService.Scope.Calendar                , 
+            
                 //,CalendarService.Scope.CalendarEventsReadonly
                 //,CalendarService.Scope.CalendarReadonly
                 //,CalendarService.Scope.CalendarSettingsReadonly
         };
         static string ApplicationName = "Google Calendar API .NET Quickstart";
+        string calendarID = "2n7op2kiaukjv3labvr48i9g7c@group.calendar.google.com";
 
-        private Events events;
+        private CalendarService service ;
 
+        private Events events ;
 
-        //https://developers.google.com/calendar/quickstart/dotnet#prerequisites
-        static void Main(string[] args)
-        {
-            UserCredential credential;
-
-
+        public GoogleEvent(){
+                UserCredential credential;
             using (var stream =
                 new FileStream("Google\\credentials-sb.json", FileMode.Open, FileAccess.Read))
             {
@@ -53,15 +52,22 @@ namespace CalendarQuickstart
             }
 
             // Create Google Calendar API service.
-            var service = new CalendarService(new BaseClientService.Initializer()
+            service = new CalendarService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
                 ApplicationName = ApplicationName,
                 //ApiKey= "ed16202aae7d40843779e372738a5e1e290dd62c"
             });
 
-            string calendarID = "2n7op2kiaukjv3labvr48i9g7c@group.calendar.google.com";
+            
 
+        }
+
+
+        //https://developers.google.com/calendar/quickstart/dotnet#prerequisites
+        public Events EventList()
+        {
+            
             // Define parameters of request.
             EventsResource.ListRequest request = service.Events.List(calendarID); //.List("primary");
             request.TimeMin = DateTime.Now;
@@ -71,50 +77,31 @@ namespace CalendarQuickstart
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
 
             // List events.
-            Events events = request.Execute();
-            Console.WriteLine("Upcoming events:");
-            if (events.Items != null && events.Items.Count > 0)
-            {
-                foreach (var eventItem in events.Items)
-                {
-                    string when = eventItem.Start.DateTime.ToString();
-                    if (String.IsNullOrEmpty(when))
-                    {
-                        when = eventItem.Start.Date;
-                    }
-                    Console.WriteLine("{0} ({1})", eventItem.Summary, when);
-                }
-            }
-            else
-            {
-                Console.WriteLine("No upcoming events found.");
-            }
+            events = request.Execute();
+            // Console.WriteLine("Upcoming events:");
+            // if (events.Items != null && events.Items.Count > 0)
+            // {
+            //     foreach (var eventItem in events.Items)
+            //     {
+            //         string when = eventItem.Start.DateTime.ToString();
+            //         if (String.IsNullOrEmpty(when))
+            //         {
+            //             when = eventItem.Start.Date;
+            //         }
+            //         Console.WriteLine("{0} ({1})", eventItem.Summary, when);
+            //     }
+            // }
+            // else
+            // {
+            //     Console.WriteLine("No upcoming events found.");
+            // }
 
-            Colors colors = service.Colors.Get().Execute();
+            return events;
 
-            Console.WriteLine("*********Print available calendarListEntry colors.");
+        }
 
-            // Print available calendarListEntry colors.
-            foreach (KeyValuePair<String, ColorDefinition> color in colors.Calendar)
-            {
-                Console.WriteLine("ColorId : " + color.Key);
-                Console.WriteLine("  Background: " + color.Value.Background);
-                Console.WriteLine("  Foreground: " + color.Value.Foreground);
-            }
-
-            Console.WriteLine("*********Print available event colors.");
-            // Print available event colors.
-            foreach (KeyValuePair<String, ColorDefinition> color in colors.Event__)
-            {
-                Console.WriteLine("ColorId : " + color.Key);
-                Console.WriteLine("  Background: " + color.Value.Background);
-                Console.WriteLine("  Foreground: " + color.Value.Foreground);
-            }
-
-            Console.WriteLine("$$$$ ----- START: Event Added ---------$$$");
-
-
-
+         public void CreateEvent()
+        {
             Event eventNew = new Event();
             eventNew.Status = "confirmed";
             eventNew.Summary = "Google I/O 2016"; //*
@@ -182,38 +169,12 @@ namespace CalendarQuickstart
 
             if (!(events.Items.Select(x=> x.Summary).ToList().Contains(eventNew.Summary)))
             {
-               // Event recurringEvent = service.Events.Insert(eventNew, calendarID).Execute();
+                Event recurringEvent = service.Events.Insert(eventNew, calendarID).Execute();
 
                 Console.WriteLine("$$$$ ----- END: Event Added ---------$$$");
+            }else{
+                 Console.WriteLine("$$$$ ----- END: Event Already Exists!!!! ---------$$$");
             }
-
-
-            //service.Events.Update(eventNew, calendarID, eventNew.Id).Execute();
-
-
-
-            //// List events.
-
-            //Events events2 = request.Execute();
-            //Console.WriteLine("Upcoming events:");
-            //if (events2.Items != null && events2.Items.Count > 0)
-            //{
-            //    foreach (var eventItem in events2.Items)
-            //    {
-            //        string when = eventItem.Start.DateTime.ToString();
-            //        if (String.IsNullOrEmpty(when))
-            //        {
-            //            when = eventItem.Start.Date;
-            //        }
-            //        Console.WriteLine("{0} ({1})", eventItem.Summary, when);
-            //    }
-            //}
-            //else
-            //{
-            //    Console.WriteLine("No upcoming events found.");
-            //}
-
-            Console.Read();
 
         }
     }
